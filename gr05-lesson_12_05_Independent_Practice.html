@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 12.05 Independent Practice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { font-family: 'Nunito', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f172a; color: #f8fafc; min-height: 100vh; }
+    .page { max-width: 780px; margin: 0 auto; padding: 28px 16px 80px; }
+
+    .instructions-banner {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid #38bdf8;
+      border-radius: 20px; padding: 24px; margin-bottom: 32px;
+      text-align: center;
+      animation: pulse-glow 3s ease-in-out 2;
+      position: relative; overflow: hidden;
+    }
+    .instructions-banner::before {
+      content: ''; position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(56, 189, 248, 0.1), transparent);
+      animation: shine 4s ease-in-out 2;
+    }
+    .instructions-banner h2 { color: #38bdf8; font-size: 24px; font-weight: 900; margin-bottom: 12px; position: relative; z-index: 1; }
+    .instructions-banner p { color: #94a3b8; font-size: 16px; line-height: 1.5; margin-bottom: 8px; position: relative; z-index: 1; }
+    .instructions-banner .highlight { color: #f472b6; font-weight: 800; }
+
+    @keyframes pulse-glow {
+      0%, 100% { border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); }
+      50% { border-color: #0ea5e9; box-shadow: 0 0 30px rgba(56, 189, 248, 0.5); }
+    }
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(30deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(30deg); }
+    }
+
+    .section-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; border-radius: 10px;
+      background: #1e293b; border: 1px solid #334155;
+      margin-bottom: 16px; margin-top: 32px;
+    }
+    .section-banner span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #64748b; }
+
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; }
+
+    .q-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .qbadge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; background: #38bdf8; color: #0f172a;
+      border-radius: 50%; font-weight: 900; font-size: 13px; flex-shrink: 0;
+    }
+    .qbadge.pink { background: #f472b6; }
+    .qbadge.violet { background: #a78bfa; }
+
+    .q-title { flex: 1; font-size: 15px; font-weight: 600; line-height: 1.4; }
+    .q-pts { font-size: 12px; font-weight: 800; color: #64748b; margin-left: 8px; }
+
+    .target-badge {
+      background: #0c4a6e; border: 1px solid #38bdf8; border-radius: 10px;
+      padding: 10px 14px; color: #38bdf8; font-weight: 700; font-size: 13px;
+      margin-bottom: 10px; text-align: center;
+    }
+    .target-badge strong { color: #f472b6; font-weight: 900; }
+    .target-badge.done { background: #052e16; border-color: #10b981; color: #10b981; }
+    .target-badge.done strong { color: #34d399; }
+
+    .plot-counter {
+      background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+      padding: 6px 12px; font-size: 12px; font-weight: 700; color: #94a3b8;
+      display: inline-block; margin-right: 8px;
+    }
+
+    canvas.graph-canvas {
+      border: 1px solid #334155; border-radius: 8px; cursor: crosshair;
+      background: #0f172a; margin-bottom: 12px;
+      max-width: 100%; height: auto; touch-action: none;
+    }
+
+    input[type=text], input[type=number] {
+      background: #0f172a; border: 1.5px solid #475569; border-radius: 8px;
+      color: #f8fafc; padding: 8px 12px; font-family: 'Nunito', sans-serif;
+      font-size: 14px; outline: none; transition: border-color .2s;
+    }
+    input:focus { border-color: #38bdf8; }
+    input.required-missing { border-color: #ef4444; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25); }
+    input:disabled, textarea:disabled { opacity: 0.75; cursor: not-allowed; background: #0a1525; color: #cbd5e1; }
+
+    .input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .input-small { width: 90px; }
+    .input-medium { width: 180px; }
+    .input-wide { width: 280px; }
+    .required-star { color: #ef4444; font-weight: 900; margin-left: 2px; }
+
+    .radio-group { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .radio-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      cursor: pointer; transition: border-color .2s;
+    }
+    .radio-item:hover { border-color: #475569; }
+    .radio-item input[type="radio"] { accent-color: #38bdf8; }
+    .radio-item label { cursor: pointer; font-size: 14px; flex: 1; }
+
+    .btn { border: none; border-radius: 10px; padding: 12px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: all .2s; font-family: 'Nunito', sans-serif; }
+    .btn-sky { background: #38bdf8; color: #0f172a; }
+    .btn-sky:hover { background: #0ea5e9; }
+    .btn-green { background: #059669; color: #fff; }
+    .btn-green:hover { background: #047857; }
+    .btn-pink { background: #f472b6; color: #0f172a; }
+    .btn-pink:hover { background: #ec4899; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .score-banner {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #334155; border-radius: 20px;
+      padding: 28px; text-align: center; margin-bottom: 28px;
+    }
+    .score-big { font-size: 44px; font-weight: 900; color: #38bdf8; line-height: 1; }
+
+    .result-item { border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; gap: 12px; }
+    .r-correct { background: #064e3b; border-left: 4px solid #10b981; }
+    .r-incorrect { background: #450a0a; border-left: 4px solid #ef4444; }
+    .r-partial { background: #451a03; border-left: 4px solid #f59e0b; }
+    .status-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 2px; }
+    .label-correct { background: #10b981; color: #022c1f; }
+    .label-incorrect { background: #ef4444; color: #2d0404; }
+    .label-partial { background: #f59e0b; color: #2d1904; }
+
+    .graph-container { margin: 16px 0; }
+
+    .work-section { margin-top: 18px; background: #0a1628; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+    .work-header { padding: 10px 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; background: #111d33; border-bottom: 1px solid #334155; }
+    .work-header:hover { background: #162340; }
+    .work-header .arrow { transition: transform .2s; font-size: 10px; color: #64748b; }
+    .work-section.open .work-header .arrow { transform: rotate(90deg); }
+    .work-header .title { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; }
+    .work-body { display: none; padding: 14px; }
+    .work-section.open .work-body { display: block; }
+
+    .work-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+    .work-toggle button { padding: 6px 12px; border: 1px solid #475569; background: #1e293b; color: #94a3b8; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; }
+    .work-toggle button.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+    textarea { width: 100%; min-height: 90px; background: #0f172a; border: 1px solid #475569; border-radius: 8px; color: #f8fafc; padding: 12px; resize: vertical; font-family: 'Nunito', sans-serif; font-size: 14px; }
+    .drawing-tools { display: flex; gap: 8px; margin-bottom: 8px; }
+    canvas.work-canvas { max-width: 100%; height: auto; border: 1px solid #334155; background: #0a1628; border-radius: 6px; touch-action: none; cursor: crosshair; }
+
+    #results-section { display: none; }
+
+    .label-text { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px; display: block; }
+
+    .hover-hint { position: absolute; background: #1e293b; border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 800; pointer-events: none; z-index: 10; white-space: nowrap; }
+
+    .validation-message { background: #450a0a; border: 1px solid #ef4444; border-radius: 8px; padding: 12px 16px; margin-top: 12px; color: #fecaca; font-size: 13px; font-weight: 600; display: none; }
+    .validation-message.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="instructions-banner">
+    <h2>📋 Submission Instructions</h2>
+    <p>You have <span class="highlight">unlimited tries</span> on this assignment!</p>
+    <p>When you achieve the score you want, <span class="highlight">download your report</span> using the button below.</p>
+    <p>Then <span class="highlight">submit the PDF file to Canvas</span> to complete this assignment.</p>
+  </div>
+
+  <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 8px; text-align: center; color: #38bdf8;">
+    Lesson 12.05 Independent Practice
+  </h1>
+  <p style="text-align: center; color: #94a3b8; margin-bottom: 32px; font-size: 16px;">
+    Creating Line Graphs &amp; Interpreting Data • Total: 13 points
+  </p>
+
+  <div class="section-banner">
+    <span>🥋 Section 1 — Karate Class Attendance &nbsp;|&nbsp; Question 1</span>
+  </div>
+
+  <div class="card">
+    <div class="q-header">
+      <span class="qbadge">1</span>
+      <div class="q-title">
+        Complete the line graph showing the number of children at 8 karate class sessions.
+        Be sure to label the axes and give the graph a title.
+        <span class="q-pts">5 pts</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 16px; overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 8px; border: 1px solid #334155; overflow: hidden;">
+        <thead>
+          <tr style="background: #1e293b;">
+            <th style="padding: 10px; text-align: left; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">Session</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">1</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">2</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">3</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">4</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">5</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">6</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">7</th>
+            <th style="padding: 10px; text-align: center; color: #38bdf8; font-weight: 700; font-size: 12px;">8</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top: 1px solid #334155;">
+            <td style="padding: 10px; color: #94a3b8; font-weight: 600; font-size: 12px; border-right: 1px solid #334155;">Number of Children</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">30</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">25</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">20</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">23</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">17</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">15</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700; border-right: 1px solid #334155;">12</td>
+            <td style="padding: 10px; text-align: center; color: #f8fafc; font-weight: 700;">20</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+      <div>
+        <span class="label-text">📝 Graph title<span class="required-star">*</span></span>
+        <input type="text" id="q1-title" placeholder="e.g., Karate Class Attendance" class="input-wide" oninput="onQ1LabelChange()">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <span class="label-text">↕ Y-axis label<span class="required-star">*</span></span>
+          <input type="text" id="q1-ylabel" placeholder="e.g., Number of Children" class="input-medium" oninput="onQ1LabelChange()">
+        </div>
+        <div>
+          <span class="label-text">↔ X-axis label<span class="required-star">*</span></span>
+          <input type="text" id="q1-xlabel" placeholder="e.g., Session" class="input-medium" oninput="onQ1LabelChange()">
+        </div>
+      </div>
+    </div>
+
+    <div class="target-badge" id="q1-prompt">
+      ✏️ Click on the graph to plot the next point
+    </div>
+
+    <div class="graph-container" style="position: relative;">
+      <canvas id="q1-canvas" class="graph-canvas" width="700" height="440"></canvas>
+      <div class="controls">
+        <span class="plot-counter" id="q1-counter">Plotted: 0/7</span>
+        <button class="btn btn-sm btn-sky" onclick="undoLastPoint('q1')">↶ Undo Last</button>
+        <button class="btn btn-sm btn-green" onclick="clearGraph('q1')">🗑️ Clear All</button>
+      </div>
+    </div>
+
+    <div id="q1-work-container"></div>
+  </div>
+
+  <div class="section-banner">
+    <span>🐕 Section 2 — Puppy Weight Tracking &nbsp;|&nbsp; Questions 2-3</span>
+  </div>
+
+  <div class="card">
+    <div class="q-header">
+      <span class="qbadge pink">2</span>
+      <div class="q-title">
+        Misha recorded the weight of her Shih Tzu puppy, Sofie, every 2 weeks for the first 30 weeks.
+        Complete the line graph by plotting the data points.
+        <span class="q-pts">5 pts</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 16px; overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; background: #0f172a; border-radius: 8px; border: 1px solid #334155; min-width: 600px;">
+        <thead>
+          <tr style="background: #1e293b;">
+            <th style="padding: 8px 4px; text-align: left; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">Weeks</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">0</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">2</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">4</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">6</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">8</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">10</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">12</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">14</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">16</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">18</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">20</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">22</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">24</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">26</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px; border-right: 1px solid #334155;">28</th>
+            <th style="padding: 8px 4px; text-align: center; color: #f472b6; font-weight: 700; font-size: 11px;">30</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-top: 1px solid #334155;">
+            <td style="padding: 8px 4px; color: #94a3b8; font-weight: 600; font-size: 11px; border-right: 1px solid #334155; white-space: nowrap;">Weight (oz)</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">6</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">16</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">24</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">29</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">39</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">45</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">53</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">60</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">70</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">74</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">81</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">86</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">93</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">95</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px; border-right: 1px solid #334155;">96</td>
+            <td style="padding: 8px 4px; text-align: center; color: #f8fafc; font-weight: 700; font-size: 12px;">98</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="target-badge" id="q2-prompt">
+      ✏️ Click on the graph to plot the next point
+    </div>
+
+    <div class="graph-container" style="position: relative;">
+      <canvas id="q2-canvas" class="graph-canvas" width="700" height="480"></canvas>
+      <div class="controls">
+        <span class="plot-counter" id="q2-counter">Plotted: 0/13</span>
+        <button class="btn btn-sm btn-sky" onclick="undoLastPoint('q2')">↶ Undo Last</button>
+        <button class="btn btn-sm btn-green" onclick="clearGraph('q2')">🗑️ Clear All</button>
+      </div>
+    </div>
+
+    <div id="q2-work-container"></div>
+  </div>
+
+  <div class="card">
+    <div class="q-header">
+      <span class="qbadge violet">3</span>
+      <div class="q-title">
+        Answer these questions about Sofie's growth based on the graph above.
+        <span class="q-pts">3 pts</span>
+      </div>
+    </div>
+
+    <div style="display: grid; gap: 16px;">
+      <div>
+        <span class="label-text">A. At about how many weeks did Sofie's growth rate start slowing down?</span>
+        <div class="input-row">
+          <input type="number" id="q3a" placeholder="0" class="input-small">
+          <span>weeks</span>
+        </div>
+      </div>
+
+      <div>
+        <span class="label-text">B. From the graph, estimate Sofie's weight at 17 weeks.</span>
+        <div class="input-row">
+          <input type="number" id="q3b" placeholder="0" class="input-small">
+          <span>ounces</span>
+        </div>
+      </div>
+
+      <div>
+        <span class="label-text">C. What would be an expected weight for Sofie at 1 year?</span>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="q3c" value="24" id="q3c1">
+            <label for="q3c1">24 ounces</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="q3c" value="72" id="q3c2">
+            <label for="q3c2">72 ounces</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="q3c" value="196" id="q3c3">
+            <label for="q3c3">196 ounces</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="q3-work-container"></div>
+  </div>
+
+  <div id="validation-message" class="validation-message"></div>
+
+  <div style="text-align: center; margin: 40px 0;">
+    <button id="submit-btn" class="btn btn-sky" onclick="submitAll()" style="font-size: 16px; padding: 16px 32px;">📝 Check My Work</button>
+    <button id="try-again-btn" class="btn btn-green" onclick="tryAgain()" style="display: none; font-size: 16px; padding: 16px 32px; margin-left: 12px;">🔄 Try Again</button>
+  </div>
+
+  <div id="results-section">
+    <div class="score-banner">
+      <div class="score-big" id="final-score">0 / 13</div>
+      <p style="color: #94a3b8; margin-top: 8px; font-size: 16px;">Total Points Earned</p>
+      <button class="btn btn-pink" onclick="generatePDF()" style="margin-top: 16px; font-size: 16px; padding: 12px 24px;">📄 Download Report PDF</button>
+    </div>
+    <div id="results-breakdown"></div>
+  </div>
+</div>
+
+<script>
+const DPR = window.devicePixelRatio || 1;
+const SNAP_TOLERANCE = 2;
+let isLocked = false;
+let lastGradeResults = null;
+let workAreas = {};
+
+// Q4-pattern: currentIdx tracks the next point to plot in sequence
+const graphData = {
+  q1: {
+    xLabels: ['1','2','3','4','5','6','7','8'],
+    values: [30, 25, 20, 23, 17, 15, 12, 20],
+    plotted: [true, false, false, false, false, false, false, false],
+    studentPoints: [],
+    maxY: 35, yIncrement: 5, requiredCount: 7,
+    xName: 'Session', yName: 'children',
+    title: '', xLabel: '', yLabel: '',
+    showLabels: true, logicalW: 700, logicalH: 440,
+    currentIdx: 1
+  },
+  q2: {
+    xLabels: ['0','2','4','6','8','10','12','14','16','18','20','22','24','26','28','30'],
+    values: [6, 16, 24, 29, 39, 45, 53, 60, 70, 74, 81, 86, 93, 95, 96, 98],
+    plotted: [true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false],
+    studentPoints: [],
+    maxY: 100, yIncrement: 10, requiredCount: 13,
+    xName: 'Week', yName: 'ounces',
+    title: 'Sofie\u2019s Weight Over Time',
+    xLabel: 'Weeks', yLabel: 'Weight (ounces)',
+    showLabels: true, logicalW: 700, logicalH: 480,
+    currentIdx: 3
+  }
+};
+
+function setupHiDPICanvas(el, w, h) {
+  el.width = w * DPR;
+  el.height = h * DPR;
+  el.style.width = w + 'px';
+  el.style.height = h + 'px';
+  const ctx = el.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return ctx;
+}
+
+function getGraphGeometry(graphId) {
+  const data = graphData[graphId];
+  return {
+    w: data.logicalW, h: data.logicalH,
+    startX: 75, startY: 50,
+    graphW: data.logicalW - 115,
+    graphH: data.logicalH - 120
+  };
+}
+
+// ================================================================
+// SEQUENCE HELPERS (Q4-pattern)
+// ================================================================
+function findNextUnplotted(graphId) {
+  const data = graphData[graphId];
+  for (let i = 0; i < data.xLabels.length; i++) {
+    if (data.plotted[i]) continue;
+    if (data.studentPoints.some(p => p.index === i)) continue;
+    return i;
+  }
+  return -1;
+}
+
+function updateTargetPrompt(graphId) {
+  const data = graphData[graphId];
+  const badge = document.getElementById(graphId + '-prompt');
+  if (!badge) return;
+  const idx = data.currentIdx;
+  if (idx < 0 || idx >= data.xLabels.length) {
+    badge.classList.add('done');
+    badge.innerHTML = '✅ All points plotted! Use Undo if you need to adjust.';
+    return;
+  }
+  badge.classList.remove('done');
+  const xLabel = data.xLabels[idx];
+  const yVal = data.values[idx];
+  badge.innerHTML = `✏️ Click on the graph to plot <strong>${data.xName} ${xLabel}</strong> &mdash; its value is <strong>${yVal}</strong> ${data.yName}`;
+}
+
+// ================================================================
+// DRAW GRAPH (no on-graph target hints — just current column highlight)
+// ================================================================
+function drawGraph(graphId) {
+  const data = graphData[graphId];
+  if (!data) return;
+  const canvas = document.getElementById(graphId + '-canvas');
+  const ctx = setupHiDPICanvas(canvas, data.logicalW, data.logicalH);
+  const geo = getGraphGeometry(graphId);
+  const { startX, startY, graphW, graphH, w, h } = geo;
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  if (data.showLabels && data.title) {
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '800 16px Nunito';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(data.title, w / 2, 22);
+  }
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 0.7;
+  const numY = Math.floor(data.maxY / data.yIncrement);
+  for (let i = 0; i <= numY; i++) {
+    const y = startY + graphH - (i / numY) * graphH;
+    ctx.beginPath();
+    ctx.moveTo(startX, y);
+    ctx.lineTo(startX + graphW, y);
+    ctx.stroke();
+  }
+  data.xLabels.forEach((_, i) => {
+    const x = startX + (i / (data.xLabels.length - 1)) * graphW;
+    ctx.beginPath();
+    ctx.moveTo(x, startY);
+    ctx.lineTo(x, startY + graphH);
+    ctx.stroke();
+  });
+
+  // Current-target column highlight (only the next point, like Q4)
+  if (data.currentIdx >= 0 && data.currentIdx < data.xLabels.length) {
+    const x = startX + (data.currentIdx / (data.xLabels.length - 1)) * graphW;
+    const halfW = Math.max(10, (graphW / (data.xLabels.length - 1)) / 2);
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = '#f472b6';
+    ctx.fillRect(x - halfW, startY, halfW * 2, graphH);
+    ctx.restore();
+  }
+
+  // Axes
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(startX, startY);
+  ctx.lineTo(startX, startY + graphH);
+  ctx.lineTo(startX + graphW, startY + graphH);
+  ctx.stroke();
+
+  // Tick labels
+  ctx.fillStyle = '#64748b';
+  ctx.font = '600 11px Nunito';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  data.xLabels.forEach((label, i) => {
+    const x = startX + (i / (data.xLabels.length - 1)) * graphW;
+    ctx.fillText(label, x, startY + graphH + 18);
+  });
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= numY; i++) {
+    const y = startY + graphH - (i / numY) * graphH;
+    ctx.fillText((i * data.yIncrement).toString(), startX - 10, y + 4);
+  }
+
+  // Live axis labels
+  if (data.showLabels) {
+    if (data.xLabel) {
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 13px Nunito';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(data.xLabel, startX + graphW / 2, startY + graphH + 45);
+    }
+    if (data.yLabel) {
+      ctx.save();
+      ctx.translate(20, startY + graphH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 13px Nunito';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(data.yLabel, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // Connect all points
+  const allPoints = [];
+  for (let i = 0; i < data.xLabels.length; i++) {
+    if (data.plotted[i]) allPoints.push({ index: i, value: data.values[i] });
+    const sp = data.studentPoints.find(p => p.index === i);
+    if (sp) allPoints.push({ index: i, value: sp.value });
+  }
+  allPoints.sort((a, b) => a.index - b.index);
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 1.5;
+  for (let i = 1; i < allPoints.length; i++) {
+    const prev = allPoints[i - 1], curr = allPoints[i];
+    const x1 = startX + (prev.index / (data.xLabels.length - 1)) * graphW;
+    const y1 = startY + graphH - (prev.value / data.maxY) * graphH;
+    const x2 = startX + (curr.index / (data.xLabels.length - 1)) * graphW;
+    const y2 = startY + graphH - (curr.value / data.maxY) * graphH;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  // Pre-plotted points (sky)
+  for (let i = 0; i < data.xLabels.length; i++) {
+    if (!data.plotted[i]) continue;
+    const x = startX + (i / (data.xLabels.length - 1)) * graphW;
+    const y = startY + graphH - (data.values[i] / data.maxY) * graphH;
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
+  }
+
+  // Student points (pink)
+  data.studentPoints.forEach(p => {
+    const x = startX + (p.index / (data.xLabels.length - 1)) * graphW;
+    const y = startY + graphH - (p.value / data.maxY) * graphH;
+    ctx.fillStyle = '#f472b6';
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.stroke();
+  });
+
+  updateCounter(graphId);
+}
+
+function updateCounter(graphId) {
+  const data = graphData[graphId];
+  const el = document.getElementById(graphId + '-counter');
+  if (!el) return;
+  const done = data.studentPoints.length;
+  const req = data.requiredCount;
+  const allDone = done === req;
+  el.innerHTML = `Plotted: <span style="color:${allDone ? '#34d399' : '#f472b6'}">${done}</span>/${req}`;
+}
+
+// ================================================================
+// Q4-PATTERN CLICK: X locked to currentIdx, only Y from click
+// ================================================================
+function handleGraphClick(e, graphId) {
+  if (isLocked) return;
+  const data = graphData[graphId];
+  if (data.currentIdx < 0 || data.currentIdx >= data.xLabels.length) return;
+
+  const canvas = document.getElementById(graphId + '-canvas');
+  const geo = getGraphGeometry(graphId);
+  const rect = canvas.getBoundingClientRect();
+
+  const scaleY = geo.h / rect.height;
+  const clickY = (e.clientY - rect.top) * scaleY;
+  const gy = 1 - (clickY - geo.startY) / geo.graphH;
+  if (gy < 0 || gy > 1) return;
+
+  let value = Math.max(0, Math.min(data.maxY, gy * data.maxY));
+
+  const index = data.currentIdx;
+  const correctVal = data.values[index];
+  if (Math.abs(value - correctVal) <= SNAP_TOLERANCE) {
+    value = correctVal;
+  } else {
+    value = Math.round(value);
+  }
+
+  data.studentPoints.push({ index, value });
+  data.studentPoints.sort((a, b) => a.index - b.index);
+  data.currentIdx = findNextUnplotted(graphId);
+
+  drawGraph(graphId);
+  updateTargetPrompt(graphId);
+}
+
+function handleGraphHover(e, graphId) {
+  if (isLocked) return;
+  const canvas = document.getElementById(graphId + '-canvas');
+  const data = graphData[graphId];
+  const geo = getGraphGeometry(graphId);
+  const rect = canvas.getBoundingClientRect();
+
+  const scaleX = geo.w / rect.width;
+  const scaleY = geo.h / rect.height;
+  const hoverX = (e.clientX - rect.left) * scaleX;
+  const hoverY = (e.clientY - rect.top) * scaleY;
+
+  const gx = (hoverX - geo.startX) / geo.graphW;
+  const gy = 1 - (hoverY - geo.startY) / geo.graphH;
+
+  const hintId = graphId + '-hint';
+  let hint = document.getElementById(hintId);
+
+  if (gx < -0.05 || gx > 1.05 || gy < 0 || gy > 1) {
+    if (hint) hint.style.display = 'none';
+    return;
+  }
+
+  const value = Math.round(gy * data.maxY);
+
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.id = hintId;
+    hint.className = 'hover-hint';
+    canvas.parentElement.appendChild(hint);
+  }
+  hint.textContent = String(value);
+  hint.style.display = 'block';
+  hint.style.left = (e.clientX - rect.left + 14) + 'px';
+  hint.style.top = (e.clientY - rect.top - 28) + 'px';
+}
+
+function handleGraphLeave(graphId) {
+  const hint = document.getElementById(graphId + '-hint');
+  if (hint) hint.style.display = 'none';
+}
+
+function undoLastPoint(graphId) {
+  if (isLocked) return;
+  const data = graphData[graphId];
+  if (data.studentPoints.length === 0) return;
+  // Remove the point with the highest index (most recently added in sequence)
+  let lastIdx = -1, lastPos = -1;
+  data.studentPoints.forEach((p, i) => {
+    if (p.index > lastIdx) { lastIdx = p.index; lastPos = i; }
+  });
+  if (lastPos >= 0) {
+    data.studentPoints.splice(lastPos, 1);
+    data.currentIdx = lastIdx;
+    drawGraph(graphId);
+    updateTargetPrompt(graphId);
+  }
+}
+
+function clearGraph(graphId) {
+  if (isLocked) return;
+  const data = graphData[graphId];
+  data.studentPoints = [];
+  data.currentIdx = findNextUnplotted(graphId);
+  drawGraph(graphId);
+  updateTargetPrompt(graphId);
+}
+
+// ================================================================
+// Q1 LIVE LABEL UPDATES
+// ================================================================
+function onQ1LabelChange() {
+  graphData.q1.title = gs('q1-title');
+  graphData.q1.yLabel = gs('q1-ylabel');
+  graphData.q1.xLabel = gs('q1-xlabel');
+  ['q1-title','q1-xlabel','q1-ylabel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value.trim()) el.classList.remove('required-missing');
+  });
+  hideValidation();
+  drawGraph('q1');
+}
+
+// ================================================================
+// WORK AREA
+// ================================================================
+function makeWorkArea(containerId, qKey, labelText) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const workId = qKey;
+  workAreas[workId] = { mode: 'type', text: '', drawImageData: null, open: false };
+  const label = labelText || '✏️ Show your work (optional)';
+
+  container.innerHTML = `
+    <div class="work-section" id="${workId}-section">
+      <div class="work-header" onclick="toggleWorkSection('${workId}')">
+        <span class="arrow">▶</span>
+        <span class="title">${label}</span>
+      </div>
+      <div class="work-body">
+        <div class="work-toggle">
+          <button onclick="setWorkMode('${workId}', 'type')" class="active" id="${workId}-type-btn">✏️ Type</button>
+          <button onclick="setWorkMode('${workId}', 'draw')" id="${workId}-draw-btn">✍️ Draw</button>
+        </div>
+        <div id="${workId}-content">
+          <textarea id="${workId}-text" placeholder="Type your work or thinking here..."></textarea>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleWorkSection(workId) {
+  const section = document.getElementById(workId + '-section');
+  if (!section) return;
+  section.classList.toggle('open');
+  if (workAreas[workId]) workAreas[workId].open = section.classList.contains('open');
+}
+
+function setWorkMode(workId, mode) {
+  if (isLocked) return;
+  const wa = workAreas[workId];
+  if (!wa) return;
+  if (wa.mode === 'type') {
+    const textEl = document.getElementById(workId + '-text');
+    if (textEl) wa.text = textEl.value;
+  } else if (wa.mode === 'draw') {
+    const canvas = document.getElementById(workId + '-canvas');
+    if (canvas) wa.drawImageData = canvas.toDataURL('image/png');
+  }
+  wa.mode = mode;
+  document.getElementById(workId + '-type-btn').className = mode === 'type' ? 'active' : '';
+  document.getElementById(workId + '-draw-btn').className = mode === 'draw' ? 'active' : '';
+
+  const content = document.getElementById(workId + '-content');
+  if (mode === 'type') {
+    content.innerHTML = `<textarea id="${workId}-text" placeholder="Type your work or thinking here...">${escapeHtml(wa.text)}</textarea>`;
+  } else {
+    content.innerHTML = `
+      <div class="drawing-tools">
+        <button class="btn btn-sm btn-sky" onclick="clearDraw('${workId}')">🗑️ Clear</button>
+        <span style="font-size: 12px; color: #64748b; align-self: center;">Click and drag to draw</span>
+      </div>
+      <canvas id="${workId}-canvas" class="work-canvas" width="720" height="180"></canvas>
+    `;
+    initDrawCanvas(workId);
+  }
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function initDrawCanvas(workId) {
+  const canvas = document.getElementById(workId + '-canvas');
+  if (!canvas) return;
+  const wa = workAreas[workId];
+  const ctx = setupHiDPICanvas(canvas, 720, 180);
+
+  ctx.strokeStyle = 'rgba(56,189,248,0.08)';
+  ctx.lineWidth = 1;
+  for (let y = 35; y < 180; y += 35) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(720, y); ctx.stroke();
+  }
+
+  if (wa.drawImageData) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, 720, 180);
+    img.src = wa.drawImageData;
+  }
+
+  let drawing = false;
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (720 / rect.width),
+      y: (e.clientY - rect.top) * (180 / rect.height)
+    };
+  }
+  function start(e) { if (isLocked) return; drawing = true; const { x, y } = getPos(e); ctx.beginPath(); ctx.moveTo(x, y); }
+  function move(e) {
+    if (!drawing || isLocked) return;
+    const { x, y } = getPos(e);
+    ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    ctx.lineTo(x, y); ctx.stroke();
+  }
+  function end() { drawing = false; wa.drawImageData = canvas.toDataURL('image/png'); }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); start(e.touches[0]); });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); move(e.touches[0]); });
+  canvas.addEventListener('touchend', e => { e.preventDefault(); end(); });
+}
+
+function clearDraw(workId) {
+  if (isLocked) return;
+  const canvas = document.getElementById(workId + '-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.strokeStyle = 'rgba(56,189,248,0.08)';
+  ctx.lineWidth = 1;
+  for (let y = 35; y < 180; y += 35) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(720, y); ctx.stroke();
+  }
+  workAreas[workId].drawImageData = null;
+}
+
+function getWorkSummary(workId) {
+  const wa = workAreas[workId];
+  if (!wa) return { hasWork: false, text: '', imageData: null };
+  if (wa.mode === 'type') {
+    const textEl = document.getElementById(workId + '-text');
+    const text = textEl ? textEl.value.trim() : (wa.text || '').trim();
+    wa.text = text;
+    return { hasWork: text.length > 0, text, imageData: null };
+  } else {
+    const canvas = document.getElementById(workId + '-canvas');
+    let hasDrawing = false;
+    let imageData = wa.drawImageData;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      try {
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < imgData.data.length; i += 16) {
+          const r = imgData.data[i], g = imgData.data[i + 1], b = imgData.data[i + 2];
+          if (r > 200 && g > 200 && b > 200) { hasDrawing = true; break; }
+        }
+      } catch (e) {}
+      imageData = canvas.toDataURL('image/png');
+      wa.drawImageData = imageData;
+    }
+    return { hasWork: hasDrawing, text: '', imageData };
+  }
+}
+
+// ================================================================
+// INPUT + GRADING
+// ================================================================
+function gs(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function pi(id) { const el = document.getElementById(id); if (!el || el.value === '') return null; const n = parseInt(el.value); return isNaN(n) ? null : n; }
+function getRadioValue(name) { const c = document.querySelector(`input[name="${name}"]:checked`); return c ? c.value : ''; }
+function hasRelevantContent(s) { if (!s) return false; return s.replace(/[^a-zA-Z]/g, '').length >= 3; }
+function hideValidation() { document.getElementById('validation-message').classList.remove('show'); }
+function showValidation(msg) { const el = document.getElementById('validation-message'); el.textContent = msg; el.classList.add('show'); }
+
+function gradeQ1() {
+  const data = graphData.q1;
+  const subs = [];
+  let earned = 0;
+
+  const title = gs('q1-title');
+  const tE = hasRelevantContent(title) ? 1 : 0;
+  earned += tE;
+  subs.push({ id: '1A', title: 'Graph title', earned: tE, total: 1, student: title || '(empty)', correct: 'Any relevant title' });
+
+  const yl = gs('q1-ylabel');
+  const yE = hasRelevantContent(yl) ? 1 : 0;
+  earned += yE;
+  subs.push({ id: '1B', title: 'Y-axis label', earned: yE, total: 1, student: yl || '(empty)', correct: 'Any relevant label' });
+
+  const xl = gs('q1-xlabel');
+  const xE = hasRelevantContent(xl) ? 1 : 0;
+  earned += xE;
+  subs.push({ id: '1C', title: 'X-axis label', earned: xE, total: 1, student: xl || '(empty)', correct: 'Any relevant label' });
+
+  const correct = [null, 25, 20, 23, 17, 15, 12, 20];
+  let ok = 0;
+  for (let i = 1; i < 8; i++) {
+    const sp = data.studentPoints.find(p => p.index === i);
+    if (sp && sp.value === correct[i]) ok++;
+  }
+  let pE = 0;
+  if (ok === 7) pE = 2; else if (ok >= 4) pE = 1;
+  earned += pE;
+  subs.push({ id: '1D', title: 'Plotted data points', earned: pE, total: 2,
+    student: `${ok}/7 points plotted correctly`,
+    correct: 'Sessions 2-8: 25, 20, 23, 17, 15, 12, 20' });
+
+  return { earned, total: 5, subQuestions: subs };
+}
+
+function gradeQ2() {
+  const data = graphData.q2;
+  const correct = [null, null, null, 29, 39, 45, 53, 60, 70, 74, 81, 86, 93, 95, 96, 98];
+  let ok = 0;
+  for (let i = 3; i < 16; i++) {
+    const sp = data.studentPoints.find(p => p.index === i);
+    if (sp && sp.value === correct[i]) ok++;
+  }
+  let earned = 0;
+  if (ok === 13) earned = 5;
+  else if (ok >= 11) earned = 4;
+  else if (ok >= 9) earned = 3;
+  else if (ok >= 6) earned = 2;
+  else if (ok >= 3) earned = 1;
+  return { earned, total: 5, student: `${ok}/13 points plotted correctly`, correct: 'All 13 points matching the data table' };
+}
+
+function gradeQ3() {
+  const subs = [];
+  let earned = 0;
+
+  const a = pi('q3a');
+  const aE = (a !== null && a >= 16 && a <= 24) ? 1 : 0;
+  earned += aE;
+  subs.push({ id: '3A', title: 'When did growth rate slow?', earned: aE, total: 1,
+    student: a === null ? '(empty)' : `${a} weeks`, correct: 'about 18-22 weeks' });
+
+  const b = pi('q3b');
+  const bE = (b !== null && b >= 62 && b <= 69) ? 1 : 0;
+  earned += bE;
+  subs.push({ id: '3B', title: 'Weight at 17 weeks', earned: bE, total: 1,
+    student: b === null ? '(empty)' : `${b} ounces`, correct: 'about 65 ounces (62-69 accepted)' });
+
+  const c = getRadioValue('q3c');
+  const cE = c === '196' ? 1 : 0;
+  earned += cE;
+  subs.push({ id: '3C', title: 'Expected weight at 1 year', earned: cE, total: 1,
+    student: c ? `${c} ounces` : '(not selected)', correct: '196 ounces' });
+
+  return { earned, total: 3, subQuestions: subs };
+}
+
+// ================================================================
+// SUBMIT / TRY AGAIN
+// ================================================================
+function validateRequired() {
+  const fields = [
+    { id: 'q1-title', label: 'graph title' },
+    { id: 'q1-ylabel', label: 'Y-axis label' },
+    { id: 'q1-xlabel', label: 'X-axis label' }
+  ];
+  const missing = [];
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el.value.trim()) { el.classList.add('required-missing'); missing.push(f.label); }
+    else el.classList.remove('required-missing');
+  });
+  if (missing.length) {
+    showValidation(`⚠️ Please fill in the required field${missing.length > 1 ? 's' : ''} for Question 1: ${missing.join(', ')}.`);
+    document.getElementById('q1-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+  hideValidation();
+  return true;
+}
+
+function submitAll() {
+  if (!validateRequired()) return;
+
+  const results = { q1: gradeQ1(), q2: gradeQ2(), q3: gradeQ3() };
+  results.work = {
+    q1: getWorkSummary('work-q1'),
+    q2: getWorkSummary('work-q2'),
+    q3: getWorkSummary('work-q3')
+  };
+  lastGradeResults = results;
+
+  let totalEarned = 0, totalPossible = 0;
+  ['q1','q2','q3'].forEach(k => { totalEarned += results[k].earned; totalPossible += results[k].total; });
+
+  if (totalEarned / totalPossible >= 0.8) showCelebration();
+
+  document.getElementById('final-score').textContent = `${totalEarned} / ${totalPossible}`;
+
+  const questions = [
+    { id: 'q1', title: 'Complete karate class graph', result: results.q1 },
+    { id: 'q2', title: 'Plot puppy weight graph', result: results.q2 },
+    { id: 'q3', title: 'Interpret growth data', result: results.q3 }
+  ];
+
+  let html = '';
+  questions.forEach((q, idx) => {
+    const r = q.result;
+    html += `
+      <div style="margin-bottom: 16px;">
+        <div style="background: #1e293b; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: #38bdf8;">Question ${idx + 1}: ${q.title}</strong>
+            <span style="color: #f8fafc; font-weight: 700;">${r.earned}/${r.total} pts</span>
+          </div>
+        </div>
+    `;
+    const rows = r.subQuestions || [{ id: `${idx + 1}`, title: q.title, earned: r.earned, total: r.total, student: r.student, correct: r.correct }];
+    rows.forEach(sub => {
+      const subFull = sub.earned === sub.total;
+      const subZero = sub.earned === 0;
+      const cls = subFull ? 'r-correct' : (subZero ? 'r-incorrect' : 'r-partial');
+      const lbl = subFull ? 'Correct' : (subZero ? 'Incorrect' : 'Partial');
+      const lblCls = subFull ? 'label-correct' : (subZero ? 'label-incorrect' : 'label-partial');
+      html += `
+        <div class="result-item ${cls}" style="margin-left: 20px; margin-bottom: 6px;">
+          <div style="flex: 1;">
+            <strong>${sub.id}:</strong> ${sub.title}
+            <br><small style="color: #cbd5e1;">Your answer: ${escapeHtml(String(sub.student))}</small>
+            <br><small style="color: #94a3b8;">Correct answer: ${escapeHtml(String(sub.correct))}</small>
+          </div>
+          <div style="text-align: right; min-width: 80px;">
+            <span class="status-label ${lblCls}">${lbl}</span>
+            <div style="font-size: 12px; margin-top: 4px; color: #cbd5e1;">${sub.earned}/${sub.total}</div>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('results-breakdown').innerHTML = html;
+  document.getElementById('results-section').style.display = 'block';
+
+  lockInputs(true);
+  document.getElementById('submit-btn').style.display = 'none';
+  document.getElementById('try-again-btn').style.display = 'inline-flex';
+  document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function tryAgain() {
+  lockInputs(false);
+  document.getElementById('results-section').style.display = 'none';
+  const btn = document.getElementById('submit-btn');
+  btn.style.display = 'inline-flex';
+  btn.textContent = '📝 Check My Work';
+  document.getElementById('try-again-btn').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function lockInputs(locked) {
+  isLocked = locked;
+  document.querySelectorAll('input, textarea').forEach(el => el.disabled = locked);
+}
+
+function showCelebration() {
+  const celebration = document.createElement('div');
+  celebration.innerHTML = '🎉 🎊 ✨ 🌟 🎉 🎊 ✨ 🌟 🎉 🎊 ✨ 🌟';
+  celebration.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);font-size:24px;z-index:9999;pointer-events:none;animation:celebrationBounce 3s ease-in-out;`;
+  if (!document.querySelector('#celebration-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'celebration-styles';
+    styles.textContent = `@keyframes celebrationBounce {
+      0% { opacity: 0; transform: translateX(-50%) scale(0.5) translateY(-20px); }
+      20% { opacity: 1; transform: translateX(-50%) scale(1.2) translateY(0px); }
+      60% { transform: translateX(-50%) scale(1.1) translateY(0px); }
+      100% { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(-10px); }
+    }`;
+    document.head.appendChild(styles);
+  }
+  document.body.appendChild(celebration);
+  setTimeout(() => celebration.remove(), 3000);
+}
+
+// ================================================================
+// PDF
+// ================================================================
+function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const results = lastGradeResults || {
+    q1: gradeQ1(), q2: gradeQ2(), q3: gradeQ3(),
+    work: { q1: getWorkSummary('work-q1'), q2: getWorkSummary('work-q2'), q3: getWorkSummary('work-q3') }
+  };
+
+  const setFill = (hex) => doc.setFillColor(parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16));
+  const setTextCol = (hex) => doc.setTextColor(parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16));
+
+  let y = 50;
+  const L = 50, R = 562;
+
+  setTextCol('#000000');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('Lesson 12.05 Assignment Report', 306, 30, { align: 'center' });
+  setFill('#000000');
+  doc.rect(L, 45, R-L, 2, 'F');
+
+  y = 70;
+  setFill('#f0f0f0');
+  doc.rect(L, y, R-L, 60, 'F');
+  setFill('#000000');
+  doc.rect(L, y, R-L, 2, 'F');
+  setTextCol('#000000');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(32);
+  doc.text(document.getElementById('final-score').textContent, 306, y+35, { align: 'center' });
+  setTextCol('#333333');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.text('Total Points Earned', 306, y+52, { align: 'center' });
+
+  y += 80;
+  setFill('#e0e0e0');
+  doc.rect(L, y, R-L, 25, 'F');
+  setTextCol('#000000');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('Question', L+10, y+16);
+  doc.text('Score', R-110, y+16);
+  doc.text('Status', R-50, y+16);
+  y += 25;
+
+  const questions = [
+    { title: 'Karate class graph', result: results.q1 },
+    { title: 'Puppy weight graph', result: results.q2 },
+    { title: 'Growth interpretation', result: results.q3 }
+  ];
+
+  questions.forEach((q, i) => {
+    const r = q.result;
+    const full = r.earned === r.total, no = r.earned === 0;
+    const statusText = full ? 'CORRECT' : (no ? 'INCORRECT' : 'PARTIAL');
+    const bandColor = full ? '#d4edda' : (no ? '#f8d7da' : '#fff3cd');
+    const statusColor = full ? '#155724' : (no ? '#721c24' : '#856404');
+
+    if (i % 2 === 0) { setFill('#f8f8f8'); doc.rect(L, y, R-L, 38, 'F'); }
+    setFill(bandColor);
+    doc.rect(R-55, y+5, 50, 28, 'F');
+
+    setTextCol('#000000');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(`Q${i+1}: ${q.title}`, L+10, y+16);
+
+    setTextCol('#555555');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    let answerText = r.student || '';
+    if (r.subQuestions) answerText = r.subQuestions.map(s => `${s.id}: ${s.earned}/${s.total}`).join('  ');
+    const wrapped = doc.splitTextToSize(String(answerText).substring(0, 120), R-L-130);
+    doc.text(wrapped, L+10, y+28);
+
+    setTextCol('#000000');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(`${r.earned}/${r.total}`, R-95, y+22);
+
+    setTextCol(statusColor);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text(statusText, R-30, y+22, { align: 'center' });
+
+    y += 40;
+    if (y > 680) { doc.addPage(); y = 50; }
+  });
+
+  doc.addPage();
+  y = 50;
+  setTextCol('#000000');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('Detailed Breakdown', 306, y, { align: 'center' });
+  y += 30;
+
+  questions.forEach((q, i) => {
+    const r = q.result;
+    setTextCol('#000000');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text(`Question ${i+1}: ${q.title} (${r.earned}/${r.total})`, L, y);
+    y += 18;
+
+    const rows = r.subQuestions || [{ id: `Q${i+1}`, title: q.title, earned: r.earned, total: r.total, student: r.student, correct: r.correct }];
+    rows.forEach(sub => {
+      const subFull = sub.earned === sub.total, subZero = sub.earned === 0;
+      const stat = subFull ? 'CORRECT' : (subZero ? 'INCORRECT' : 'PARTIAL');
+      setTextCol(subFull ? '#155724' : (subZero ? '#721c24' : '#856404'));
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(`  ${sub.id} [${stat}] ${sub.earned}/${sub.total}`, L, y);
+      y += 14;
+      setTextCol('#333333');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const sl = doc.splitTextToSize(`    Your answer: ${sub.student}`, R-L);
+      doc.text(sl, L, y);
+      y += sl.length * 11;
+      const cl = doc.splitTextToSize(`    Correct: ${sub.correct}`, R-L);
+      doc.text(cl, L, y);
+      y += cl.length * 11 + 4;
+      if (y > 720) { doc.addPage(); y = 50; }
+    });
+    y += 8;
+    if (y > 700) { doc.addPage(); y = 50; }
+  });
+
+  const workEntries = [
+    { q: 'Question 1 Work', w: results.work && results.work.q1 },
+    { q: 'Question 2 Work', w: results.work && results.work.q2 },
+    { q: 'Question 3 Work', w: results.work && results.work.q3 }
+  ];
+  workEntries.forEach(entry => {
+    if (!entry.w || !entry.w.hasWork) return;
+    doc.addPage();
+    let wy = 50;
+    setTextCol('#000000');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text(entry.q, 306, wy, { align: 'center' });
+    wy += 30;
+    if (entry.w.text) {
+      setTextCol('#000000');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      const lines = doc.splitTextToSize(entry.w.text, R-L);
+      doc.text(lines, L, wy);
+    } else if (entry.w.imageData) {
+      try { doc.addImage(entry.w.imageData, 'PNG', L, wy, R-L, 180); }
+      catch (e) {
+        setTextCol('#721c24');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.text('(Drawing could not be embedded.)', L, wy);
+      }
+    }
+  });
+
+  const date = new Date().toLocaleDateString();
+  setTextCol('#666666');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.text(`Generated on ${date}  •  Page ${p} of ${pageCount}`, 306, 780, { align: 'center' });
+  }
+
+  doc.save('Lesson_12_05_Assignment_Report.pdf');
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function initCanvasEvents(graphId) {
+  const canvas = document.getElementById(graphId + '-canvas');
+  if (!canvas) return;
+  canvas.addEventListener('click', (e) => handleGraphClick(e, graphId));
+  canvas.addEventListener('mousemove', (e) => handleGraphHover(e, graphId));
+  canvas.addEventListener('mouseleave', () => handleGraphLeave(graphId));
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length > 0) handleGraphClick(e.touches[0], graphId);
+  });
+}
+
+window.addEventListener('load', () => {
+  graphData.q1.currentIdx = findNextUnplotted('q1');
+  graphData.q2.currentIdx = findNextUnplotted('q2');
+
+  drawGraph('q1');
+  drawGraph('q2');
+  updateTargetPrompt('q1');
+  updateTargetPrompt('q2');
+
+  initCanvasEvents('q1');
+  initCanvasEvents('q2');
+
+  makeWorkArea('q1-work-container', 'work-q1');
+  makeWorkArea('q2-work-container', 'work-q2');
+  makeWorkArea('q3-work-container', 'work-q3', '✏️ Show your work (required)');
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { drawGraph('q1'); drawGraph('q2'); }, 150);
+});
+</script>
+</body>
+</html>
